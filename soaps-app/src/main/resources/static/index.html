@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>soaps.ae - app</title>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<style type="text/css">
+		body {
+		  padding-top: 50px;
+		}
+		.starter-template {
+		  padding: 40px 15px;
+		  text-align: center;
+		}	
+	</style>
+</head>
+<body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">soaps.ae - app</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#expense">Enter Expense</a></li>
+            <li><a href="#totalExpenses" id="totalExpensesLink" data-toggle="collapse">Total Expenses</a></li>
+            <li><a href="expenses.html">Expenses</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+		
+		<div class="container">
+			<a id="expense"></a>
+			<h3>Enter Expense</h3>
+			<form role="form">
+				<div class="form-group">
+					<label for="expenseTypeSelect">Expense Type</label>
+					<select class="form-control" id="expenseTypeSelect">
+						<option value="ingredient">Ingredients</option>
+						<option value="packaging">Packaging</option>
+						<option value="tools">Tools</option>
+						<option value="other">Other</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="expenseAmountInput">Amount</label>
+					<input class="form-control" type="number" step="any" min="0" id="expenseAmountInput" placeholder="0.00"/>
+				</div>			
+				<div class="form-group">
+					<label for="expenseCurrencySelect">Currency</label>
+					<select class="form-control" id="expenseCurrencySelect">
+						<option value="USD">USD</option>
+						<option value="AED" selected="selected">AED</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="expenseDescriptionTextArea">Description</label>
+					<textarea id="expenseDescriptionTextArea" class="form-control"></textarea>
+				</div>								
+				<button id="expenseButton" type="button" class="btn btn-default">Save</button>
+			</form>
+		</div>
+		
+		<hr/>
+
+		<div class="container">
+			<a id="totalExpenses"></a>
+			<div class="panel panel-default">
+				<div class="panel-heading">Total Expenses <button type="button" class="btn btn-default" id="refreshExpenseTotal">Refresh</button></div>
+				<div class="panel-body">
+					<table class="table">
+					<tr>
+						<th>
+							USD
+						</th>
+						<th>
+							AED
+						</th>
+					</tr>
+					<tr>
+						<td id="usdTotalExpense"></td>
+						<td id="aedTotalExpense"></td>
+					</tr>
+					</table>
+				</div>
+			</div>
+		</div>		
+
+    </div>
+    
+	<script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>    
+    <script type="text/javascript">
+    
+	    $(document).ready(function() {
+	    	loadExpenseTotals();
+	    });
+    
+    	$('#totalExpensesLink').click(function() {
+    		loadExpenseTotals();
+    	});
+    	
+    	$('#refreshExpenseTotal').click(function() {
+    		loadExpenseTotals();
+    	})
+    
+    	//function to persist expense
+    	$('#expenseButton').click(function() {
+    		//build the date
+    		var d = new Date();
+    		var stringDate = d.getDate() + "/" + (d.getMonth()+1) + "/" + d.getFullYear();
+    		//build the object
+    		var obj = {};
+    		obj['expenseType'] = $('#expenseTypeSelect').val();
+    		obj['amount'] = $('#expenseAmountInput').val();
+    		obj['currency'] = $('#expenseCurrencySelect').val();
+    		obj['description'] = $('#expenseDescriptionTextArea').val();
+    		obj['transactiondate'] = stringDate;
+    		//submit
+    		$.ajax({
+    			url:'/app/expense',
+    			type:'POST',
+    			data: JSON.stringify(obj),
+    			contentType:'application/json',
+    			success:function() {
+    				//alert
+    				alert('saved');
+    				$('#expenseTypeSelect').val('');
+    				$('#expenseAmountInput').val('');
+    				$('#expenseCurrencySelect').val('');
+    				$('#expenseDescriptionTextArea').val('');
+    				//load
+    				loadExpenseTotals();
+    			}
+    		});
+    	});
+    	
+    	function loadExpenseTotals() {
+    		//load the total expenses
+    		$.ajax({
+    			url:'/app/expense/total',
+    			type:'GET',
+    			success:function(data) {
+    				console.log(data);
+    				$('#usdTotalExpense').html(data.USD);
+    				$('#aedTotalExpense').html(data.AED);
+    			}
+    		});    		
+    	}
+    	
+    </script>
+
+</body>
+</html>
